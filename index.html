@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Kujiale 3D Room Viewer</title>
+  <title>3D Room Viewer</title>
   <style>
     body { margin: 0; background: #000; color: #fff; font-family: sans-serif; }
     canvas { display: block; }
@@ -84,11 +84,11 @@
         texture => {
           texture.colorSpace = THREE.SRGBColorSpace; // newer Three.js
           scene.background = texture;
-          console.log(`✅ Loaded room: ${roomName}`);
+          console.log(`Loaded room: ${roomName}`);
         },
         undefined,
         err => {
-          console.error(`❌ Error loading ${roomName}`, err);
+          console.error(`Error loading ${roomName}`, err);
         }
       );
     }
