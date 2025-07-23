@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kujiale 3D Room Viewer</title>
+  <style>
+    body { margin: 0; background: #000; color: #fff; font-family: sans-serif; }
+    canvas { display: block; }
+    #room-select {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      padding: 8px;
+      font-size: 16px;
+    }
+  </style>
+
+  <!-- Import map: maps bare specifiers to CDN URLs -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.157.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <select id="room-select">
+    <option value="">Select Room</option>
+  </select>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+    // room folders
+    const rooms = ["L3D221S21ENDPOJW7VQUWJ6U2LUFX6YTFWQ8", "L3D221S21ENDPOKFQBYUWJ6U2LUFX623MNA8", "L3D221S21ENDPOJWAEIUWIXM4LUFX6Y2N7Q8", "L3D221S21ENDPOKFGFAUWINMWLUFX73F2ZQ8", "L3D221S21ENDPOJW7LIUWJ6U2LUFX6YTCHY8", "L3D221S21ENDPOKFGYYUWJY46LUFX62PWGY8", "L3D221S21ENDPOKFGAAUWJY46LUFX62PTLQ8", "L3D221S21ENDPOKE5QYUWI3GILUFX6ZWVQY8", "L3D221S21ENDPOKFRXIUWINMWLUFX733BSQ8", "L3D221S21ENDPOJW7RAUWII3OLUFX6Y56HY8", "L3D221S21ENDPOKFG5AUWII3OLUFX62MM2I8", "L3D221S21ENDPOJWABIUWLIEKLUFX73X6WQ8", "L3D221S21ENDPOKFSJYUWJY46LUFX62F7JA8", "L3D221S21ENDPOJW75AUWLIEKLUFX73XFXY8", "L3D221S21ENDPOKE75AUWJY46LUFX6ZXORY8", "L3D221S21ENDPOJW7ZYUWJY46LUFX6Y5ASY8", "L3D221S21ENDPOJW7BQUWIXM4LUFX6Y5XMI8", "L3D221S21ENDPOKFSKQUWINMWLUFX733GMA8", "L3D221S21ENDPOKE7UIUWINMWLUFX73MQJQ8", "L3D221S21ENDPOKFGGQUWJY46LUFX62PRPA8", "L3D221S21ENDPOJWAKIUWLIEKLUFX73XYPQ8", "L3D221S21ENDPOKFSOYUWJY46LUFX62FSUY8", "L3D221S21ENDPOKE56QUWII3OLUFX6ZWXBQ8", "L3D221S21ENDPOJWCAIUWIXM4LUFX6Y24RI8", "L3D221S21ENDPOKE4MAUWJQ4ILUFX73I7KY8", "L3D221S21ENDPOJWC4AUWJ6U2LUFX6YQMTY8", "L3D221S21ENDPOKFSCIUWJ6U2LUFX623TJI8", "L3D221S21ENDPOJWAJAUWLIEKLUFX73X3LY8"];
+
+    // Populate dropdown
+    const select = document.getElementById("room-select");
+    rooms.forEach(room => {
+      const opt = document.createElement("option");
+      opt.value = room;
+      opt.textContent = room;
+      select.appendChild(opt);
+    });
+
+    let scene, camera, renderer, controls;
+
+    function initScene() {
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        100
+      );
+      camera.position.z = 0.01; // must be inside the cube
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.outputColorSpace = THREE.SRGBColorSpace; // new Three.js color management
+      document.body.appendChild(renderer.domElement);
+
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableZoom = false;
+      controls.enablePan = false;
+      controls.rotateSpeed = -0.3; // invert drag dir (optional)
+
+      animate();
+    }
+
+    function loadRoom(roomName) {
+      const basePath = `room_images/${roomName}/`;
+      const faceSuffixes = ["r", "l", "u", "d", "f", "b"]; // Three.js cubemap order
+      const urls = faceSuffixes.map(sfx => `${basePath}${roomName}_${sfx}.jpg`);
+
+      const loader = new THREE.CubeTextureLoader();
+      loader.load(
+        urls,
+        texture => {
+          texture.colorSpace = THREE.SRGBColorSpace; // newer Three.js
+          scene.background = texture;
+          console.log(`✅ Loaded room: ${roomName}`);
+        },
+        undefined,
+        err => {
+          console.error(`❌ Error loading ${roomName}`, err);
+        }
+      );
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    select.addEventListener("change", e => {
+      const selected = e.target.value;
+      if (selected) loadRoom(selected);
+    });
+
+    initScene();
+  </script>
+</body>
+</html>
